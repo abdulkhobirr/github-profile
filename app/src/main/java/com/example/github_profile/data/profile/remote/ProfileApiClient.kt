@@ -13,7 +13,7 @@ interface ProfileApiClient {
             @Query("since") since:Int
     ): Single<List<GetUsersResponse>>
 
-    @GET("/user/{username}")
+    @GET("/users/{username}")
     fun getUserProfile(
             @Path("username") username: String
     ): Single<GetUserProfileResponse>
