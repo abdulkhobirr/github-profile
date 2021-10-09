@@ -3,6 +3,7 @@ package com.example.github_profile.presentation
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.github_profile.R
 import com.example.github_profile.databinding.ActivityMainBinding
 import com.example.github_profile.utils.showDefaultState
@@ -16,6 +17,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private val profileViewModel: ProfileViewModel by viewModel()
+    private lateinit var userAdapter: UserAdapter
 
     var timeStart = 0L
 
@@ -26,12 +28,29 @@ class MainActivity : AppCompatActivity() {
         setContentView(view)
 
         initActions()
+        initRV()
         initObservable()
         profileViewModel.getUsers()
     }
 
+    private fun initRV(){
+        userAdapter = UserAdapter()
+
+        binding.rvUser.apply {
+            layoutManager =
+                LinearLayoutManager(
+                    context,
+                    LinearLayoutManager.VERTICAL,
+                    false
+                )
+            setHasFixedSize(true)
+            adapter = userAdapter
+        }
+    }
+
     private fun initActions(){
         binding.swipeRefresh.setOnRefreshListener {
+            profileViewModel.resetSince()
             profileViewModel.getUsers()
             binding.swipeRefresh.isRefreshing = false
         }
@@ -47,6 +66,16 @@ class MainActivity : AppCompatActivity() {
                 }
                 is ResultWrapper.Success -> {
                     binding.msvUser.showDefaultState()
+
+                    if (profileViewModel.getSinceCount() == 1){
+                        userAdapter.setUserData(it.data)
+                    } else {
+                        binding.swipeRefresh.post {
+                            binding.swipeRefresh.isRefreshing = false
+                        }
+                        userAdapter.loadMoreData(it.data)
+                    }
+
                     val timeEnd = System.currentTimeMillis()-timeStart
                     Log.d("GetUserTimeEnd", timeEnd.toString())
                     Log.d("GetUserGithub", it.data.toString())

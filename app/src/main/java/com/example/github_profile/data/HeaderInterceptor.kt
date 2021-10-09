@@ -11,8 +11,7 @@ class HeaderInterceptor(
         val original = chain.request()
 
         val request = original.newBuilder()
-            .header("Authorization", "Bearer $token")
-            .method(original.method, original.body)
+            .addHeader("Authorization", "Bearer" + token)
             .build()
 
         return chain.proceed(request)

@@ -55,9 +55,22 @@ class ProfileViewModel(
                 }, onError = {
                     genericErrorHandler(it, listUser)
                 }, onComplete = {
+                    incrementSince()
                     listUser.value = ResultWrapper.success(tempList)
                 }
             ).addTo(disposable)
+    }
+
+    fun getSinceCount(): Int {
+        return since
+    }
+
+    fun resetSince(){
+        since = 1
+    }
+
+    private fun incrementSince(){
+        since += 10
     }
 
     override fun onCleared() {
