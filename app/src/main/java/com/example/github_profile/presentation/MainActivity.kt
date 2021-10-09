@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity(), UserAdapter.OnUserItemClicked {
     private val profileViewModel: ProfileViewModel by viewModel()
     private lateinit var userAdapter: UserAdapter
 
-    var timeStart = 0L
+    private var lastId = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity(), UserAdapter.OnUserItemClicked {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
                 if (!recyclerView.canScrollVertically(1)) {
-                    profileViewModel.incrementSince()
+                    profileViewModel.updateSince(lastId)
                     profileViewModel.getUsers()
                 }
             }
@@ -69,11 +69,35 @@ class MainActivity : AppCompatActivity(), UserAdapter.OnUserItemClicked {
     }
 
     private fun initObservable(){
-        profileViewModel.listUser.observe(this, {
+        profileViewModel.listUsers.observe(this, {
             when (it) {
                 is ResultWrapper.Loading -> {
-                    timeStart = System.currentTimeMillis()
-                    Log.d("GetUserTimeStart", System.currentTimeMillis().toString())
+                    if (profileViewModel.getSinceCount() == 1) {
+                        binding.msvUser.showLoadingState()
+                    } else {
+                        binding.swipeRefresh.post {
+                            binding.swipeRefresh.isRefreshing = true
+                        }
+                    }
+                }
+                is ResultWrapper.Success -> {
+                    profileViewModel.getUserProfile(it.data)
+                }
+                is ResultWrapper.Failure -> {
+                    binding.msvUser.showErrorState(
+                        title = it.title,
+                        errorMessage = it.message,
+                        errorAction = {
+                            profileViewModel.getUsers()
+                        }
+                    )
+                }
+            }
+        })
+
+        profileViewModel.listUserDetail.observe(this, {
+            when (it) {
+                is ResultWrapper.Loading -> {
                     if (profileViewModel.getSinceCount() == 1) {
                         binding.msvUser.showLoadingState()
                     } else {
@@ -85,6 +109,7 @@ class MainActivity : AppCompatActivity(), UserAdapter.OnUserItemClicked {
                 is ResultWrapper.Success -> {
                     binding.msvUser.showDefaultState()
 
+                    lastId = it.data.maxByOrNull { data -> data.userId }!!.userId
                     if (profileViewModel.getSinceCount() == 1){
                         userAdapter.setUserData(it.data)
                     } else {
@@ -93,15 +118,10 @@ class MainActivity : AppCompatActivity(), UserAdapter.OnUserItemClicked {
                         }
                         userAdapter.loadMoreData(it.data)
                     }
-
-                    val timeEnd = System.currentTimeMillis()-timeStart
-                    Log.d("GetUserTimeEnd", timeEnd.toString())
-                    Log.d("GetUserGithub", it.data.toString())
                 }
                 is ResultWrapper.Failure -> {
-                    val timeEnd = System.currentTimeMillis()-timeStart
-                    Log.d("GetUserTimeEnd", timeEnd.toString())
                     binding.msvUser.showErrorState(
+                        title = it.title,
                         errorMessage = it.message,
                         errorAction = {
                             profileViewModel.getUsers()

@@ -18,27 +18,30 @@ class ProfileViewModel(
     private val repository: ProfileRepository,
     private val disposable: CompositeDisposable
 ): ViewModel() {
-    val listUser = MutableLiveData<ResultWrapper<List<GetUserProfileResponse>>>()
+    val listUserDetail = MutableLiveData<ResultWrapper<List<GetUserProfileResponse>>>()
+    val listUsers = MutableLiveData<ResultWrapper<List<GetUsersResponse>>>()
     var since: Int = 1
 
     init {
-        listUser.value = ResultWrapper.default()
+        listUsers.value = ResultWrapper.default()
+        listUserDetail.value = ResultWrapper.default()
     }
 
     fun getUsers(){
-        listUser.value = ResultWrapper.loading()
+        listUsers.value = ResultWrapper.loading()
         repository.getUsers(since)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
-                getUserProfile(it)
+                listUsers.value = ResultWrapper.success(it)
             }, {
-                genericErrorHandler(it, listUser)
+                genericErrorHandler(it, listUsers)
             })
             .addTo(disposable)
     }
 
     fun getUserProfile(list: List<GetUsersResponse>){
+        listUserDetail.value = ResultWrapper.loading()
         val getProfile: MutableList<Observable<GetUserProfileResponse>> = mutableListOf()
         val tempList = mutableListOf<GetUserProfileResponse>()
 
@@ -53,9 +56,9 @@ class ProfileViewModel(
                 onNext = {
                     tempList.add(it)
                 }, onError = {
-                    genericErrorHandler(it, listUser)
+                    genericErrorHandler(it, listUserDetail)
                 }, onComplete = {
-                    listUser.value = ResultWrapper.success(tempList)
+                    listUserDetail.value = ResultWrapper.success(tempList)
                 }
             ).addTo(disposable)
     }
@@ -68,8 +71,9 @@ class ProfileViewModel(
         since = 1
     }
 
-    fun incrementSince(){
-        since += 10
+
+    fun updateSince(update: Int){
+        since = update
     }
 
     override fun onCleared() {

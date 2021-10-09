@@ -36,6 +36,16 @@ fun <T> genericErrorHandler(e: Throwable, result: MutableLiveData<ResultWrapper<
                     "Data tidak ditemukan",
                     e.response()?.errorBody().toString()
                 )
+                HttpException(e.response()!!).response()?.code() == 401 -> ResultWrapper.fail(
+                    e,
+                    "Unauthorized",
+                    e.response()?.errorBody().toString()
+                )
+                HttpException(e.response()!!).response()?.code() == 403 -> ResultWrapper.fail(
+                    e,
+                    "Forbidden",
+                    e.response()?.errorBody().toString()
+                )
                 else -> ResultWrapper.fail(
                     e,
                     title = "Terjadi kesalahan",
