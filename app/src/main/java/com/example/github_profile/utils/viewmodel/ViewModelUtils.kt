@@ -1,9 +1,12 @@
 package com.example.github_profile.utils.viewmodel
 
 import androidx.lifecycle.MutableLiveData
+import com.example.github_profile.data.profile.model.ResponseItem
+import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
+import okhttp3.ResponseBody
 import retrofit2.HttpException
 import java.io.IOException
 import java.net.SocketTimeoutException
@@ -13,7 +16,6 @@ fun Disposable.addTo(disposable: CompositeDisposable) {
 }
 
 fun <T> genericErrorHandler(e: Throwable, result: MutableLiveData<ResultWrapper<T>>) {
-    // TODO: 28/11/18 define a proper Error Message
     when (e) {
         is SocketTimeoutException -> result.value =
             ResultWrapper.fail(e, "Koneksi Gagal", "Gagal menghubungkan ke server, silahkan coba lagi.")
@@ -39,12 +41,12 @@ fun <T> genericErrorHandler(e: Throwable, result: MutableLiveData<ResultWrapper<
                 HttpException(e.response()!!).response()?.code() == 401 -> ResultWrapper.fail(
                     e,
                     "Unauthorized",
-                    e.response()?.errorBody().toString()
+                    parseErrorBody(e.response()?.errorBody())
                 )
                 HttpException(e.response()!!).response()?.code() == 403 -> ResultWrapper.fail(
                     e,
                     "Forbidden",
-                    e.response()?.errorBody().toString()
+                    parseErrorBody(e.response()?.errorBody())
                 )
                 else -> ResultWrapper.fail(
                     e,
@@ -56,4 +58,10 @@ fun <T> genericErrorHandler(e: Throwable, result: MutableLiveData<ResultWrapper<
         else -> result.value =
             ResultWrapper.fail(e, title = "Terjadi kesalahan", message = "Error tidak diketahui")
     }
+}
+
+private fun parseErrorBody(errorString: ResponseBody ?): String {
+    return if (errorString == null) {
+        "Unknown Error Occurred"
+    } else Gson().fromJson(errorString.charStream(), ResponseItem::class.java).message
 }

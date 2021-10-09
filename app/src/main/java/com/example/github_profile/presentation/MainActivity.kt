@@ -81,6 +81,7 @@ class MainActivity : AppCompatActivity(), UserAdapter.OnUserItemClicked {
                     }
                 }
                 is ResultWrapper.Success -> {
+                    binding.msvUser.showDefaultState()
                     profileViewModel.getUserProfile(it.data)
                 }
                 is ResultWrapper.Failure -> {
