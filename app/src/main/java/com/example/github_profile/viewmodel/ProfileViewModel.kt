@@ -55,7 +55,6 @@ class ProfileViewModel(
                 }, onError = {
                     genericErrorHandler(it, listUser)
                 }, onComplete = {
-                    incrementSince()
                     listUser.value = ResultWrapper.success(tempList)
                 }
             ).addTo(disposable)
@@ -69,7 +68,7 @@ class ProfileViewModel(
         since = 1
     }
 
-    private fun incrementSince(){
+    fun incrementSince(){
         since += 10
     }
 

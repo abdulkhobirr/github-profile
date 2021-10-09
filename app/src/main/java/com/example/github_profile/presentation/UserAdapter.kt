@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.NonNull
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.github_profile.R
@@ -12,7 +11,8 @@ import com.example.github_profile.data.profile.model.GetUserProfileResponse
 import com.example.github_profile.databinding.UserItemBinding
 
 class UserAdapter(
-    val data : MutableList<GetUserProfileResponse> = mutableListOf()
+    val data : MutableList<GetUserProfileResponse> = mutableListOf(),
+    val listener: OnUserItemClicked
 ) : RecyclerView.Adapter<UserAdapter.ViewHolder>() {
 
     fun setUserData(userData: List<GetUserProfileResponse>) {
@@ -64,7 +64,15 @@ class UserAdapter(
                     .load(item.avatarUrl)
                     .placeholder(R.drawable.ic_baseline_account_circle_24)
                     .into(binding.ivUser)
+
+                binding.mcvUserItem.setOnClickListener {
+                    listener.toastUserData(item)
+                }
             }
         }
+    }
+
+    interface OnUserItemClicked {
+        fun toastUserData(userData: GetUserProfileResponse)
     }
 }

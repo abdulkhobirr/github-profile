@@ -11,7 +11,9 @@ class HeaderInterceptor(
         val original = chain.request()
 
         val request = original.newBuilder()
-            .addHeader("Authorization", "Bearer" + token)
+            .addHeader("Authorization", "token " + token)
+            .addHeader("User-Agent", "request")
+            .addHeader("Accept", "application/vnd.github.v3+json")
             .build()
 
         return chain.proceed(request)

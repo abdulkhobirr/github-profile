@@ -3,8 +3,10 @@ package com.example.github_profile.presentation
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.github_profile.R
+import androidx.recyclerview.widget.RecyclerView
+import com.example.github_profile.data.profile.model.GetUserProfileResponse
 import com.example.github_profile.databinding.ActivityMainBinding
 import com.example.github_profile.utils.showDefaultState
 import com.example.github_profile.utils.showErrorState
@@ -13,7 +15,7 @@ import com.example.github_profile.utils.viewmodel.ResultWrapper
 import com.example.github_profile.viewmodel.ProfileViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), UserAdapter.OnUserItemClicked {
     private lateinit var binding: ActivityMainBinding
 
     private val profileViewModel: ProfileViewModel by viewModel()
@@ -34,7 +36,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initRV(){
-        userAdapter = UserAdapter()
+        userAdapter = UserAdapter(listener = this)
 
         binding.rvUser.apply {
             layoutManager =
@@ -46,6 +48,16 @@ class MainActivity : AppCompatActivity() {
             setHasFixedSize(true)
             adapter = userAdapter
         }
+
+        binding.rvUser.addOnScrollListener(object: RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                if (!recyclerView.canScrollVertically(1)) {
+                    profileViewModel.incrementSince()
+                    profileViewModel.getUsers()
+                }
+            }
+        })
     }
 
     private fun initActions(){
@@ -62,7 +74,13 @@ class MainActivity : AppCompatActivity() {
                 is ResultWrapper.Loading -> {
                     timeStart = System.currentTimeMillis()
                     Log.d("GetUserTimeStart", System.currentTimeMillis().toString())
-                    binding.msvUser.showLoadingState()
+                    if (profileViewModel.getSinceCount() == 1) {
+                        binding.msvUser.showLoadingState()
+                    } else {
+                        binding.swipeRefresh.post {
+                            binding.swipeRefresh.isRefreshing = true
+                        }
+                    }
                 }
                 is ResultWrapper.Success -> {
                     binding.msvUser.showDefaultState()
@@ -92,5 +110,9 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    override fun toastUserData(userData: GetUserProfileResponse) {
+        Toast.makeText(this, userData.toString(), Toast.LENGTH_LONG).show()
     }
 }
