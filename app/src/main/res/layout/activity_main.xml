@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/clMainActivity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".presentation.MainActivity">
@@ -16,12 +18,13 @@
     <com.kennyc.view.MultiStateView
         android:id="@+id/msvUser"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:paddingHorizontal="10dp"
         app:msv_loadingView="@layout/default_loading_layout"
         app:msv_errorView="@layout/default_error_layout"
         app:msv_viewState="content"
-        app:layout_constraintTop_toBottomOf="@id/toolbarMain">
+        app:layout_constraintTop_toBottomOf="@id/toolbarMain"
+        app:layout_constraintBottom_toBottomOf="parent">
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/swipeRefresh"
             android:layout_width="match_parent"
@@ -30,7 +33,6 @@
                 android:id="@+id/rvUser"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:paddingBottom="?actionBarSize"
                 tools:listitem="@layout/user_item"/>
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
     </com.kennyc.view.MultiStateView>

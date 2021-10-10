@@ -53,8 +53,10 @@ class UserAdapter(
             with(itemView) {
                 val email = if (item.email.isNullOrEmpty()) "Not Available" else item.email
                 val location = if (item.location.isNullOrEmpty()) "Not Available" else item.location
+                val name = if (item.name.isNullOrEmpty()) "Not Available" else item.name
 
                 binding.tvUsername.text = String.format("Username: ${item.username}")
+                binding.tvName.text = String.format("Name: $name")
                 binding.tvId.text = String.format("Id: ${item.userId}")
                 binding.tvCreatedAt.text = String.format("Created At: ${item.createdAt}")
                 binding.tvEmail.text = String.format("Email: $email")

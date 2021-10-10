@@ -2,7 +2,6 @@ package com.example.github_profile.presentation
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -10,6 +9,7 @@ import com.example.github_profile.data.profile.model.GetUserProfileResponse
 import com.example.github_profile.databinding.ActivityMainBinding
 import com.example.github_profile.utils.showDefaultState
 import com.example.github_profile.utils.showErrorState
+import com.example.github_profile.utils.showIndefiniteSnackbar
 import com.example.github_profile.utils.showLoadingState
 import com.example.github_profile.utils.viewmodel.ResultWrapper
 import com.example.github_profile.viewmodel.ProfileViewModel
@@ -85,13 +85,24 @@ class MainActivity : AppCompatActivity(), UserAdapter.OnUserItemClicked {
                     profileViewModel.getUserProfile(it.data)
                 }
                 is ResultWrapper.Failure -> {
-                    binding.msvUser.showErrorState(
-                        title = it.title,
-                        errorMessage = it.message,
-                        errorAction = {
-                            profileViewModel.getUsers()
+                    binding.swipeRefresh.post {
+                        binding.swipeRefresh.isRefreshing = false
+                    }
+                    if (profileViewModel.getSinceCount() == 1) {
+                        binding.msvUser.showErrorState(
+                                title = it.title,
+                                errorMessage = it.message,
+                                errorAction = {
+                                    profileViewModel.getUsers()
+                                }
+                        )
+                    } else {
+                        it.message?.let { it1 -> showIndefiniteSnackbar(binding.clMainActivity, it1,
+                                "Retry") {
+                                profileViewModel.getUsers()
+                            }
                         }
-                    )
+                    }
                 }
             }
         })
@@ -111,7 +122,7 @@ class MainActivity : AppCompatActivity(), UserAdapter.OnUserItemClicked {
                     binding.msvUser.showDefaultState()
 
                     lastId = it.data.maxByOrNull { data -> data.userId }!!.userId
-                    if (profileViewModel.getSinceCount() == 1){
+                    if (profileViewModel.getSinceCount() == 1) {
                         userAdapter.setUserData(it.data)
                     } else {
                         binding.swipeRefresh.post {
@@ -121,13 +132,25 @@ class MainActivity : AppCompatActivity(), UserAdapter.OnUserItemClicked {
                     }
                 }
                 is ResultWrapper.Failure -> {
-                    binding.msvUser.showErrorState(
-                        title = it.title,
-                        errorMessage = it.message,
-                        errorAction = {
-                            profileViewModel.getUsers()
+                    binding.swipeRefresh.post {
+                        binding.swipeRefresh.isRefreshing = false
+                    }
+                    if (profileViewModel.getSinceCount() == 1) {
+                        binding.msvUser.showErrorState(
+                                title = it.title,
+                                errorMessage = it.message,
+                                errorAction = {
+                                    profileViewModel.getUsers()
+                                }
+                        )
+                    } else {
+                        it.message?.let { it1 ->
+                            showIndefiniteSnackbar(binding.clMainActivity, it1,
+                                    "Retry") {
+                                profileViewModel.getUsers()
+                            }
                         }
-                    )
+                    }
                 }
             }
         })

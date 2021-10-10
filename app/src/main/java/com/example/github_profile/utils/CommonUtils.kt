@@ -6,6 +6,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import com.example.github_profile.R
+import com.google.android.material.snackbar.Snackbar
 import com.kennyc.view.MultiStateView
 
 fun View.visible() {
@@ -64,4 +65,22 @@ fun MultiStateView.showErrorState(
         this.getView(MultiStateView.ViewState.ERROR)?.findViewById<Button>(R.id.btn_error)
 
     btnError?.setOnClickListener { errorAction?.invoke() }
+}
+
+fun showIndefiniteSnackbar(
+        parentView: View,
+        message: String,
+        actionMessage: String,
+        action: () -> Unit
+) {
+    val snackbar = Snackbar.make(parentView, message, Snackbar.LENGTH_INDEFINITE)
+            .apply {
+                setAction(actionMessage) {
+                    action.invoke()
+                }
+            }
+
+    val view = snackbar.view
+    view.translationY = -70f
+    snackbar.show()
 }
