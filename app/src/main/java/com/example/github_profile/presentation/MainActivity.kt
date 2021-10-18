@@ -53,6 +53,10 @@ class MainActivity : AppCompatActivity(), UserAdapter.OnUserItemClicked {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
                 if (!recyclerView.canScrollVertically(1)) {
+                    (recyclerView.adapter as UserAdapter).apply {
+                        setLoadingState(true)
+                        binding.rvUser.smoothScrollToPosition(userAdapter.itemCount-1)
+                    }
                     profileViewModel.updateSince(lastId)
                     profileViewModel.getUsers()
                 }
@@ -74,10 +78,6 @@ class MainActivity : AppCompatActivity(), UserAdapter.OnUserItemClicked {
                 is ResultWrapper.Loading -> {
                     if (profileViewModel.getSinceCount() == 1) {
                         binding.msvUser.showLoadingState()
-                    } else {
-                        binding.swipeRefresh.post {
-                            binding.swipeRefresh.isRefreshing = true
-                        }
                     }
                 }
                 is ResultWrapper.Success -> {
@@ -97,6 +97,7 @@ class MainActivity : AppCompatActivity(), UserAdapter.OnUserItemClicked {
                                 }
                         )
                     } else {
+                        userAdapter.setLoadingState(false)
                         it.message?.let { it1 -> showIndefiniteSnackbar(binding.clMainActivity, it1,
                                 "Retry") {
                                 profileViewModel.getUsers()
@@ -112,10 +113,6 @@ class MainActivity : AppCompatActivity(), UserAdapter.OnUserItemClicked {
                 is ResultWrapper.Loading -> {
                     if (profileViewModel.getSinceCount() == 1) {
                         binding.msvUser.showLoadingState()
-                    } else {
-                        binding.swipeRefresh.post {
-                            binding.swipeRefresh.isRefreshing = true
-                        }
                     }
                 }
                 is ResultWrapper.Success -> {
@@ -128,13 +125,12 @@ class MainActivity : AppCompatActivity(), UserAdapter.OnUserItemClicked {
                         binding.swipeRefresh.post {
                             binding.swipeRefresh.isRefreshing = false
                         }
+                        userAdapter.setLoadingState(false)
                         userAdapter.loadMoreData(it.data)
                     }
                 }
                 is ResultWrapper.Failure -> {
-                    binding.swipeRefresh.post {
-                        binding.swipeRefresh.isRefreshing = false
-                    }
+                    userAdapter.setLoadingState(false)
                     if (profileViewModel.getSinceCount() == 1) {
                         binding.msvUser.showErrorState(
                                 title = it.title,

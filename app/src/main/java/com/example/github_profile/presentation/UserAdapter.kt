@@ -8,12 +8,32 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.github_profile.R
 import com.example.github_profile.data.profile.model.GetUserProfileResponse
+import com.example.github_profile.databinding.ItemLoadingBinding
 import com.example.github_profile.databinding.UserItemBinding
+import java.lang.IllegalArgumentException
 
 class UserAdapter(
-    val data : MutableList<GetUserProfileResponse> = mutableListOf(),
-    val listener: OnUserItemClicked
+    val data : MutableList<Any> = mutableListOf(),
+    val listener: OnUserItemClicked,
+    var isLoading: Boolean = false
 ) : RecyclerView.Adapter<UserAdapter.ViewHolder>() {
+
+    companion object {
+        private const val TYPE_LOADING = 0
+        private const val TYPE_ITEM = 1
+    }
+
+    fun setLoadingState(state: Boolean){
+        isLoading = state
+        if (!isLoading) {
+            data.removeLast()
+        } else {
+            if (data.last() != "loading"){
+                data.add("loading")
+            }
+        }
+        notifyDataSetChanged()
+    }
 
     fun setUserData(userData: List<GetUserProfileResponse>) {
         if (data.size > 0) {
@@ -34,16 +54,43 @@ class UserAdapter(
     }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
-        val binding = UserItemBinding.inflate(LayoutInflater.from(viewGroup.context), viewGroup, false)
-        return UserViewHolder(binding)
+//        val binding = UserItemBinding.inflate(LayoutInflater.from(viewGroup.context), viewGroup, false)
+//        return UserViewHolder(binding)
+        return when (viewType) {
+            TYPE_ITEM -> {
+                val view = UserItemBinding.inflate(LayoutInflater.from(viewGroup.context), viewGroup, false)
+                UserViewHolder(view)
+            }
+            TYPE_LOADING -> {
+                val view = ItemLoadingBinding.inflate(LayoutInflater.from(viewGroup.context), viewGroup, false)
+                LoadingViewHolder(view)
+            }
+            else -> {
+                throw IllegalArgumentException("invalid view type")
+            }
+        }
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        val compare = data[position]
+        return when(compare) {
+            is GetUserProfileResponse  -> TYPE_ITEM
+            else -> TYPE_LOADING
+        }
     }
 
     override fun getItemCount(): Int = data.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val userItem: GetUserProfileResponse = data[position]
-        val userViewHolder = holder as UserViewHolder
-        userViewHolder.bindUserItem(userItem)
+        when (holder) {
+            is UserViewHolder -> {
+                val userItem: GetUserProfileResponse = data[position] as GetUserProfileResponse
+                holder.bindUserItem(userItem)
+            }
+            is LoadingViewHolder -> {
+
+            }
+        }
     }
 
     open inner class ViewHolder(@NonNull itemView: View) : RecyclerView.ViewHolder(itemView)
@@ -71,6 +118,12 @@ class UserAdapter(
                     listener.toastUserData(item)
                 }
             }
+        }
+    }
+
+    inner class LoadingViewHolder(private val binding: ItemLoadingBinding): ViewHolder(binding.root) {
+        fun bindItemLoading(){
+
         }
     }
 
