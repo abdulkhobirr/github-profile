@@ -8,13 +8,16 @@ import com.example.github_profile.data.profile.model.GetUsersResponse
 import com.example.github_profile.utils.viewmodel.ResultWrapper
 import com.example.github_profile.utils.viewmodel.addTo
 import com.example.github_profile.utils.viewmodel.genericErrorHandler
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
+import javax.inject.Inject
 
-class ProfileViewModel(
+@HiltViewModel
+class ProfileViewModel @Inject constructor(
     private val repository: ProfileRepository,
     private val disposable: CompositeDisposable
 ): ViewModel() {

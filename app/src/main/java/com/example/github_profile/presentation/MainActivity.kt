@@ -3,6 +3,7 @@ package com.example.github_profile.presentation
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.github_profile.data.profile.model.GetUserProfileResponse
@@ -13,12 +14,13 @@ import com.example.github_profile.utils.showIndefiniteSnackbar
 import com.example.github_profile.utils.showLoadingState
 import com.example.github_profile.utils.viewmodel.ResultWrapper
 import com.example.github_profile.viewmodel.ProfileViewModel
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(), UserAdapter.OnUserItemClicked {
     private lateinit var binding: ActivityMainBinding
 
-    private val profileViewModel: ProfileViewModel by viewModel()
+    private val profileViewModel: ProfileViewModel by viewModels()
     private lateinit var userAdapter: UserAdapter
 
     private var lastId = 1
